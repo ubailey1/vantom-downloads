@@ -1,0 +1,54 @@
+# Publishes a VANTOM build as a GitHub release.
+#
+# How it works: push a branch named "release/<version>" (for example
+# "release/0.97") containing the build zips and a NOTES.md file at its root.
+# This workflow creates the release "v<version>" with those zips attached,
+# marks it as the latest release, then deletes the branch so the zips never
+# stay in the repository's history.
+name: Publish release
+
+on:
+  push:
+    branches:
+      - "release/**"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Work out the version
+        id: v
+        run: echo "version=${GITHUB_REF_NAME#release/}" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(*.zip)
+          if [ ${#files[@]} -eq 0 ]; then echo "No .zip files on this branch"; exit 1; fi
+          sha256sum "${files[@]}"
+          notes=NOTES.md; [ -f "$notes" ] || { echo "VANTOM $VERSION" > notes.tmp; notes=notes.tmp; }
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            gh release upload "v$VERSION" "${files[@]}" --clobber
+            gh release edit "v$VERSION" --notes-file "$notes" --latest
+          else
+            gh release create "v$VERSION" "${files[@]}" \
+              --target main \
+              --title "VANTOM $VERSION test build" \
+              --notes-file "$notes" \
+              --latest
+          fi
+
+      - name: Delete the release branch
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${GITHUB_REF_NAME}"
