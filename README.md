@@ -1,12 +1,12 @@
-# IONISYN downloads
+# IONIS downloads
 
-Download host for **IONISYN** (called VANTOM before 1.0 r.26), the four-layer dynamic synthesizer by [The Indie Scientist](https://theindiescientist.com/products/ionisyn/).
+Download host for **IONIS** (called IONISYN before 1.0 r.31, and VANTOM before r.26), the four-layer dynamic synthesizer by [The Indie Scientist](https://theindiescientist.com/products/ionis/).
 
 The current test build is always on one page, with a Windows installer and a macOS package:
 
-**https://github.com/ubailey1/vantom-downloads/releases/tag/ionisyn**
+**https://github.com/ubailey1/vantom-downloads/releases/tag/ionis**
 
-Each new build replaces the files on that page. For install instructions, system requirements and the Logic Pro guide, see the [IONISYN page](https://theindiescientist.com/products/ionisyn/#download).
+Each new build replaces the files on that page. For install instructions, system requirements and the Logic Pro guide, see the [IONIS page](https://theindiescientist.com/products/ionis/#download).
 
 The latest build is always at:
 

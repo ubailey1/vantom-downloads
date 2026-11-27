@@ -1,8 +1,8 @@
-# Publishes an IONISYN build (called VANTOM before 1.0 r.26) as a GitHub release.
+# Publishes an IONIS build (called IONISYN before 1.0 r.31, VANTOM before r.26) as a GitHub release.
 #
 # How it works: push a branch named "release/<version>" (for example
 # "release/0.97") containing the build zips and a NOTES.md file at its root.
-# This workflow puts those zips on the single release page "ionisyn" (replacing the
+# This workflow puts those zips on the single release page "ionis" (replacing the
 # previous build's files), marks it as the latest release, then deletes the branch so the zips never
 # stay in the repository's history.
 name: Publish release
@@ -35,20 +35,25 @@ jobs:
           files=(*.zip)
           if [ ${#files[@]} -eq 0 ]; then echo "No .zip files on this branch"; exit 1; fi
           sha256sum "${files[@]}"
-          notes=NOTES.md; [ -f "$notes" ] || { echo "IONISYN $VERSION" > notes.tmp; notes=notes.tmp; }
-          # Every build goes to ONE release page (tag "ionisyn"): its files are replaced, its title and notes
-          # updated, so https://github.com/<repo>/releases/tag/ionisyn always has the current build.
-          TAG=ionisyn
+          notes=NOTES.md; [ -f "$notes" ] || { echo "IONIS $VERSION" > notes.tmp; notes=notes.tmp; }
+          # Every build goes to ONE release page (tag "ionis"): its files are replaced, its title and notes
+          # updated, so https://github.com/<repo>/releases/tag/ionis always has the current build.
+          TAG=ionis
+          # (1.0 r.31) The page was tagged "ionisyn" (the synth's name before): the same page is re-tagged, not a new one.
+          if ! gh release view "$TAG" >/dev/null 2>&1 && gh release view ionisyn >/dev/null 2>&1; then
+            gh release edit ionisyn --tag "$TAG"
+            git push origin --delete ionisyn 2>/dev/null || gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/tags/ionisyn" || true
+          fi
           if gh release view "$TAG" >/dev/null 2>&1; then
             for old in $(gh release view "$TAG" --json assets --jq '.assets[].name'); do
               gh release delete-asset "$TAG" "$old" --yes
             done
             gh release upload "$TAG" "${files[@]}" --clobber
-            gh release edit "$TAG" --title "IONISYN test build $VERSION" --notes-file "$notes" --latest
+            gh release edit "$TAG" --title "IONIS test build $VERSION" --notes-file "$notes" --latest
           else
             gh release create "$TAG" "${files[@]}" \
               --target main \
-              --title "IONISYN test build $VERSION" \
+              --title "IONIS test build $VERSION" \
               --notes-file "$notes" \
               --latest
           fi
